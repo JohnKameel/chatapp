@@ -103,5 +103,3 @@ class ContactScreen extends StatelessWidget {
     );
   }
 }
-
-// information about the current user
