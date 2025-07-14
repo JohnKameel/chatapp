@@ -1,6 +1,11 @@
+import 'package:chat_app/core/database/supabase_service.dart';
 import 'package:chat_app/features/contacts/presentation/viewModel/contacts_cubit.dart';
+import 'package:chat_app/features/home/data/repo/home_repo.dart';
+import 'package:chat_app/features/home/presentation/viewModel/room_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../auth/data/model/user_info_model.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});
@@ -27,6 +32,7 @@ class ContactScreen extends StatelessWidget {
             return ListView.builder(
               itemCount: state.contacts.length,
               itemBuilder: (context, index) {
+                // final UserInfoModel user = state.user;
                 return Column(
                   children: [
                     Container(
@@ -36,7 +42,24 @@ class ContactScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(),
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage:
+                                state.contacts[index].image_profile != null &&
+                                        state.contacts[index].image_profile!
+                                            .isNotEmpty
+                                    ? NetworkImage(
+                                        state.contacts[index].image_profile!)
+                                    : null,
+                            child:
+                                (state.contacts[index].image_profile == null ||
+                                        state.contacts[index].image_profile!
+                                            .isEmpty)
+                                    ? const Icon(Icons.person,
+                                        size: 40, color: Colors.grey)
+                                    : null,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -66,7 +89,25 @@ class ContactScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              final user = state.contacts[index];
+                              context.read<RoomCubit>().createRoom(
+                                    SupabaseService()
+                                        .client
+                                        .auth
+                                        .currentUser!
+                                        .id,
+                                    state.contacts[index].UID,
+                                  );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${user.user_name} added successfully!',
+                                  ),
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [

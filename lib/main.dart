@@ -1,5 +1,6 @@
 import 'package:chat_app/core/routing/router_app.dart';
 import 'package:chat_app/features/contacts/presentation/viewModel/contacts_cubit.dart';
+import 'package:chat_app/features/home/presentation/viewModel/room_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,8 +16,15 @@ void main() async {
     url: 'https://dfqowngfjapvutiilxbk.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmcW93bmdmamFwdnV0aWlseGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3OTE0NDAsImV4cCI6MjA2NjM2NzQ0MH0.16jJVWZNhLFgO6zI0YWHCLw1qITbDRHdW4pNGohfSfg',
   );
-  runApp(BlocProvider(
-    create: (context) => getIt<ContactsCubit>()..fetchContacts(),
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider<ContactsCubit>(
+        create: (context) => getIt<ContactsCubit>()..fetchContacts(),
+      ),
+      BlocProvider<RoomCubit>(
+        create: (context) => getIt<RoomCubit>()..getAllRooms(),
+      ),
+    ],
     child: MyApp(),
   ));
 }
