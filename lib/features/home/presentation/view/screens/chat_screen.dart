@@ -19,13 +19,22 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController messageController = TextEditingController();
+  late final MessagesCubit messagesCubit;
 
   @override
   void initState() {
     super.initState();
     final roomId = widget.roomModel!.id;
     context.read<MessagesCubit>().getAllMessages(widget.roomModel!.id);
-    context.read<RoomCubit>().markMessagesAsSeen(roomId);
+    context.read<MessagesCubit>().markMessagesAsSeen(roomId).then((_) {
+      context.read<RoomCubit>().updateUnreadCounts(roomId);
+    });
+  }
+
+  @override
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,6 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemBuilder: (context, index) {
                       bool isMe = messages[index].senderId == myId;
                       final message = messages[index];
+
                       return Align(
                         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                         child: Container(

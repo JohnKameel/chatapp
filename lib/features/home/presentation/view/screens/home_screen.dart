@@ -52,7 +52,6 @@ class HomeScreen extends StatelessWidget {
                   return Center(child: Text(state.error),);
                 }
                 if (state is GetAllRoomSuccess) {
-                  context.read<RoomCubit>().updateUnreadCounts(state.rooms);
                   final rooms = state.rooms;
                   if (rooms.isEmpty) {
                     return Center(child: Text('No rooms available'));

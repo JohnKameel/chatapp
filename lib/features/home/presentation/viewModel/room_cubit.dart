@@ -12,6 +12,8 @@ class RoomCubit extends Cubit<RoomState> {
   HomeRepo homeRepo;
   RoomCubit(this.homeRepo) : super(RoomInitial());
 
+  final List<RoomModel> _cachedRooms = [];
+
   createRoom(myId, anotherId) async {
     emit(CreateRoomLoading());
 
@@ -25,43 +27,50 @@ class RoomCubit extends Cubit<RoomState> {
 
   StreamSubscription<List<RoomModel>>? roomSubscription;
 
-  getAllRooms() {
+  void getAllRooms() {
     emit(GetAllRoomLoading());
-
-    try{
+    try {
       roomSubscription = homeRepo.getAllRooms().listen((rooms) async {
+        final myId = homeRepo.supabaseService.currentUserId;
         List<RoomModel> roomWithUsers = [];
 
         for (var room in rooms) {
-          final anotherId = room.members
-              .where((id) => id != homeRepo.supabaseService.currentUserId)
-              .first;
+          final anotherId = room.members.firstWhere((id) => id != myId);
 
           final user = await homeRepo.getUserInfo(anotherId);
+
+          final unreadCount = await homeRepo.getUnreadMessagesCount(room.id);
+
           user.fold((failure) {
             emit(GetAllRoomFailure(failure.message));
           }, (user) {
             room.otherUserInfo = user;
+            room.unreadMessages = unreadCount;
             roomWithUsers.add(room);
           });
         }
-        emit(GetAllRoomSuccess(roomWithUsers));
+        _cachedRooms
+          ..clear()
+          ..addAll(roomWithUsers);
+        emit(GetAllRoomSuccess(List.from(_cachedRooms)));
       });
-    }catch(e){
+    } catch (e) {
       emit(GetAllRoomFailure(e.toString()));
     }
   }
 
-  Future<void> updateUnreadCounts(List<RoomModel> rooms) async {
-    for (var room in rooms) {
-      final count = await homeRepo.getUnreadMessagesCount(room.id);
-      room.unreadMessages = count;
-    }
-
-    emit(GetAllRoomSuccess(List.from(rooms)));
+  Future<void> updateUnreadCounts(String roomId) async {
+    try {
+      final count = await homeRepo.getUnreadMessagesCount(roomId);
+      final index = _cachedRooms.indexWhere((r) => r.id == roomId);
+      if (index != -1) {
+        _cachedRooms[index].unreadMessages = count;
+        emit(GetAllRoomSuccess(List.from(_cachedRooms)));
+      }
+    } catch (_) {}
   }
 
   markMessagesAsSeen(String roomId) async {
-      await homeRepo.markMessagesAsSeen(roomId);
+    await homeRepo.markMessagesAsSeen(roomId);
   }
 }

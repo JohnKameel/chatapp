@@ -46,7 +46,7 @@ class HomeRepo {
 
   Stream<List<RoomModel>> getAllRooms() {
     try {
-      final myId = supabaseService.currentUserId;
+      final myId = supabaseService.client.auth.currentUser!.id;
       final stream =
           supabaseService.client.from("rooms").stream(primaryKey: ['id']);
 

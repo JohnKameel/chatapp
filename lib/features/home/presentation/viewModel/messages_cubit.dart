@@ -27,11 +27,24 @@ class MessagesCubit extends Cubit<MessagesState> {
 
   getAllMessages(roomId) {
     emit(MessagesLoading());
-    messagesSubscription?.cancel();
     messagesSubscription = homeRepo.getAllMessages(roomId).listen((messages) {
       emit(MessagesSuccess(messages));
     }, onError: (error) {
       emit(MessagesFailure("Failed to fetch messages: $error"));
     });
+  }
+
+  Future<void> markMessagesAsSeen(String roomId) async {
+    try {
+      await homeRepo.markMessagesAsSeen(roomId);
+    } catch (e) {
+      if (!isClosed) emit(MessagesFailure("Failed to mark messages as seen: $e"));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    messagesSubscription?.cancel();
+    return super.close();
   }
 }
