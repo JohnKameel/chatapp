@@ -7,7 +7,7 @@ part 'room_model.g.dart';
 class RoomModel {
   final String id;
   final String lastMessage;
-  final int unreadMessages;
+  late int unreadMessages;
   final List<String> members;
   UserInfoModel? otherUserInfo;
 

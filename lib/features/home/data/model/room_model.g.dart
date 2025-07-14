@@ -12,11 +12,14 @@ RoomModel _$RoomModelFromJson(Map<String, dynamic> json) => RoomModel(
       unreadMessages: (json['unreadMessages'] as num).toInt(),
       members:
           (json['members'] as List<dynamic>).map((e) => e as String).toList(),
-    );
+    )..otherUserInfo = json['otherUserInfo'] == null
+        ? null
+        : UserInfoModel.fromJson(json['otherUserInfo'] as Map<String, dynamic>);
 
 Map<String, dynamic> _$RoomModelToJson(RoomModel instance) => <String, dynamic>{
       'id': instance.id,
       'lastMessage': instance.lastMessage,
       'unreadMessages': instance.unreadMessages,
       'members': instance.members,
+      'otherUserInfo': instance.otherUserInfo,
     };

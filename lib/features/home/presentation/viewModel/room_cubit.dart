@@ -51,4 +51,17 @@ class RoomCubit extends Cubit<RoomState> {
       emit(GetAllRoomFailure(e.toString()));
     }
   }
+
+  Future<void> updateUnreadCounts(List<RoomModel> rooms) async {
+    for (var room in rooms) {
+      final count = await homeRepo.getUnreadMessagesCount(room.id);
+      room.unreadMessages = count;
+    }
+
+    emit(GetAllRoomSuccess(List.from(rooms)));
+  }
+
+  markMessagesAsSeen(String roomId) async {
+      await homeRepo.markMessagesAsSeen(roomId);
+  }
 }

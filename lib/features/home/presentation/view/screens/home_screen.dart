@@ -52,6 +52,7 @@ class HomeScreen extends StatelessWidget {
                   return Center(child: Text(state.error),);
                 }
                 if (state is GetAllRoomSuccess) {
+                  context.read<RoomCubit>().updateUnreadCounts(state.rooms);
                   final rooms = state.rooms;
                   if (rooms.isEmpty) {
                     return Center(child: Text('No rooms available'));
@@ -61,9 +62,25 @@ class HomeScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final room = rooms[index];
                       return ListTile(
+                        onTap: () {
+                          context.push(RouterApp.chat, extra: room);
+                        },
                         title: Text(room.otherUserInfo?.user_name ?? 'Unknown User'),
-                        subtitle: Text(room.lastMessage),
-                        trailing: Text(room.unreadMessages > 0 ? room.unreadMessages.toString() : '0'),
+                        subtitle: Text(state.rooms[index].lastMessage),
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundImage: NetworkImage(room.otherUserInfo?.image_profile ?? ''),
+                        ),
+                        trailing: room.unreadMessages > 0
+                            ? CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Colors.red,
+                          child: Text(
+                            room.unreadMessages.toString(),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        )
+                            : null,
                       );
                     },
                   );
